@@ -1,4 +1,4 @@
-package uk.ac.ed.inf;
+package uk.ac.ed.inf.structural;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,7 +12,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class PathfindingAlgorithmTest {
+public class StructuralTests {
 
     private List<NoFlyZone> noFlyZones;
     private List<LngLat> centralArea;
@@ -111,23 +111,95 @@ public class PathfindingAlgorithmTest {
     }
 
     @Test
-    void testNoPath() {
-        LngLat start = new LngLat(-3.190, 55.944);
-        LngLat goal = new LngLat(-3.195, 55.950); // Outside central area
+    void testPathfindingWithNoObstacles() {
+        LngLat start = new LngLat(-3.191, 55.945);
+        LngLat goal = new LngLat(-3.186, 55.944);
 
-        List<LngLat> path = PathfindingAlgorithm.findPath(start, goal, noFlyZones, centralArea);
+        List<LngLat> path = PathfindingAlgorithm.findPath(start, goal, Collections.emptyList(), centralArea);
 
-        assertNull(path, "No valid path should be found");
+        assertNotNull(path);
+        assertFalse(path.isEmpty());
+        assertTrue(path.get(path.size() - 1).isCloseTo(goal, 0.00015));
     }
 
     @Test
-    void testInsideNoFlyZone() {
-        LngLat start = new LngLat(-3.190, 55.944);
-        LngLat goal = new LngLat(-3.188, 55.944); // Inside a NoFlyZone
+    void testPathDirectlyNextToDeliveryPoint() {
+        LngLat start = new LngLat(-3.192, 55.946);
+        LngLat goal = new LngLat(-3.191, 55.946); // Very close
+
+        List<LngLat> path = PathfindingAlgorithm.findPath(start, goal, Collections.emptyList(), centralArea);
+
+        assertNotNull(path);
+    }
+
+    @Test
+    void testStartAndGoalSamePoint() {
+        LngLat start = new LngLat(-3.191, 55.945);
+
+        List<LngLat> path = PathfindingAlgorithm.findPath(start, start, noFlyZones, centralArea);
+
+        assertNotNull(path);
+        assertEquals(1, path.size(), "Path should contain only the start point.");
+        assertEquals(start, path.get(0), "Start and goal should be the same.");
+    }
+
+    @Test
+    void testGoalOutsideCentralArea() {
+        LngLat start = new LngLat(-3.191, 55.945);
+        LngLat goal = new LngLat(-3.180, 55.950); // Outside central area
 
         List<LngLat> path = PathfindingAlgorithm.findPath(start, goal, noFlyZones, centralArea);
 
-        assertNull(path, "Path should be null since the goal is inside a NoFlyZone");
+        assertNull(path, "Path should not exist since the goal is outside the central area.");
+    }
+
+    @Test
+    void testBlockedPathByNoFlyZones() {
+        NoFlyZone largeBlock = new NoFlyZone("Blocked Area", Arrays.asList(
+                new LngLat(-3.190, 55.945), new LngLat(-3.189, 55.946),
+                new LngLat(-3.188, 55.945), new LngLat(-3.189, 55.944), new LngLat(-3.190, 55.945)
+        ));
+
+        List<LngLat> path = PathfindingAlgorithm.findPath(
+                new LngLat(-3.191, 55.945),
+                new LngLat(-3.188, 55.945),
+                Collections.singletonList(largeBlock),
+                centralArea
+        );
+
+        assertNull(path, "No valid path should be found as the destination is blocked.");
+    }
+
+    @Test
+    void testPathfindingPerformanceForSimplePath() {
+        LngLat start = new LngLat(-3.190, 55.944);
+        LngLat goal = new LngLat(-3.185, 55.944);
+
+        long startTime = System.nanoTime();
+        List<LngLat> path = PathfindingAlgorithm.findPath(start, goal, noFlyZones, centralArea);
+        long endTime = System.nanoTime();
+
+        long executionTime = (endTime - startTime) / 1_000_000;
+
+        assertNotNull(path);
+        assertFalse(path.isEmpty());
+        assertTrue(executionTime < 200, "Pathfinding should complete in under 200ms, but took " + executionTime + "ms.");
+    }
+
+    @Test
+    void testPathfindingPerformance() {
+        LngLat start = new LngLat(-3.191, 55.945);
+        LngLat goal = new LngLat(-3.186874, 55.944494);
+
+        long startTime = System.nanoTime();
+        List<LngLat> path = PathfindingAlgorithm.findPath(start, goal, noFlyZones, centralArea);
+        long endTime = System.nanoTime();
+
+        long executionTime = (endTime - startTime) / 1_000_000;
+
+        assertNotNull(path);
+        assertFalse(path.isEmpty());
+        assertTrue(executionTime < 200, "Pathfinding should complete in under 200ms, but took " + executionTime + "ms.");
     }
 
 

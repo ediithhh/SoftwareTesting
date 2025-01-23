@@ -16,24 +16,24 @@ public class NoFlyZoneService {
 
     private final RestTemplate restTemplate;
 
-    public NoFlyZoneService() {
-        this.restTemplate = new RestTemplate();
+    // ✅ Correctly inject the RestTemplate
+    public NoFlyZoneService(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
     }
 
     /**
-     * Fetches the list of no-fly zones
+     * Fetches the list of no-fly zones.
      *
-     * @return A list of {@link NoFlyZone} objects representing no fly areas.
-     * If the API response is null, returns an empty list.
+     * @return A list of {@link NoFlyZone} objects representing no-fly areas.
+     * If the API response is null, throws an exception.
      */
     public List<NoFlyZone> fetchNoFlyZones() {
         String url = "https://ilp-rest-2024.azurewebsites.net/noFlyZones";
         NoFlyZone[] zonesArray = restTemplate.getForObject(url, NoFlyZone[].class);
 
         if (zonesArray == null) {
-            return new ArrayList<>();
+            throw new NullPointerException("Received null response from API");
         }
         return Arrays.asList(zonesArray);
     }
-
 }

@@ -1,22 +1,25 @@
-package uk.ac.ed.inf;
+package uk.ac.ed.inf.unit;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import uk.ac.ed.inf.constant.*;
+import uk.ac.ed.inf.constant.OrderStatus;
+import uk.ac.ed.inf.constant.OrderValidationCode;
+import uk.ac.ed.inf.constant.SystemConstants;
 import uk.ac.ed.inf.data.*;
 import uk.ac.ed.inf.external.RestaurantService;
 import uk.ac.ed.inf.validation.OrderValidationImpl;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.util.Arrays;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.when;
 
-public class OrderValidationImplTest {
+public class OrderValidationImplTestUnit {
 
     @Mock
     private RestaurantService restaurantService;
@@ -203,6 +206,22 @@ public class OrderValidationImplTest {
         assertEquals(OrderStatus.INVALID, result.getOrderStatus());
         assertEquals(OrderValidationCode.TOTAL_INCORRECT, result.getOrderValidationCode());
     }
+
+    @Test
+    void testDifferentDateFormats() {
+        Order order1 = createValidOrder();
+        order1.getCreditCardInformation().setCreditCardExpiry("02/26");
+
+        Order order2 = createValidOrder();
+        order2.getCreditCardInformation().setCreditCardExpiry("02-2026");
+
+        Order result1 = orderValidator.validateOrder(order1, new Restaurant[]{createMockRestaurant()});
+        Order result2 = orderValidator.validateOrder(order2, new Restaurant[]{createMockRestaurant()});
+
+        assertEquals(OrderValidationCode.NO_ERROR, result1.getOrderValidationCode());
+        assertEquals(OrderValidationCode.EXPIRY_DATE_INVALID, result2.getOrderValidationCode());
+    }
+
 
 
     private Order createValidOrder() {

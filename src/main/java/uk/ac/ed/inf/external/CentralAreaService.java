@@ -15,8 +15,8 @@ public class CentralAreaService {
 
     private final RestTemplate restTemplate;
 
-    public CentralAreaService() {
-        this.restTemplate = new RestTemplate();
+    public CentralAreaService(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate; // ✅ Uses the injected RestTemplate
     }
 
     /**
@@ -30,7 +30,8 @@ public class CentralAreaService {
         Map<String, Object> response = restTemplate.getForObject(url, Map.class);
 
         if (response == null || !response.containsKey("vertices")) {
-            throw new RuntimeException("Failed to fetch central area");
+            // return List.of();
+            throw new NullPointerException("Received null response from API");
         }
 
         List<Map<String, Double>> verticesData =

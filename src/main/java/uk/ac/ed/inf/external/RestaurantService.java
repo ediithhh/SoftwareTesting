@@ -12,7 +12,9 @@ public class RestaurantService {
 
     private final RestTemplate restTemplate;
 
-    public RestaurantService() {this.restTemplate = new RestTemplate();}
+    public RestaurantService(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
 
     /**
      * Fetches restaurant data from the external API.
@@ -21,6 +23,12 @@ public class RestaurantService {
      */
     public Restaurant[] fetchRestaurants() {
         String url = "https://ilp-rest-2024.azurewebsites.net/restaurants";
+        Restaurant[] restaurants = restTemplate.getForObject(url, Restaurant[].class);
+
+        if (restaurants == null) {
+            throw new NullPointerException("Received null response from restaurant API");
+        }
+
         return restTemplate.getForObject(url, Restaurant[].class);
     }
 }
