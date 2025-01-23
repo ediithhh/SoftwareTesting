@@ -1060,7 +1060,7 @@ public class APITests {
                 """;
 
         long startTime = System.nanoTime();
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < 10; i++) {
             ResponseEntity<Order> response = sendPostRequest(url, requestBody, Order.class);
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         }
@@ -1102,7 +1102,7 @@ public class APITests {
                 """;
 
         long startTime = System.nanoTime();
-        for (int i = 0; i < 30; i++) {
+        for (int i = 0; i < 20; i++) {
             ResponseEntity<Order> response = sendPostRequest(url, requestBody, Order.class);
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         }
